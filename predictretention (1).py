@@ -7,10 +7,21 @@ Original file is located at
     https://colab.research.google.com/drive/16E5Xfot7Kw3b2TZchTH3s_s0wJx8MXbU
 """
 
+from google.colab import files
+import pickle
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score
 import pandas as pd
 
 # Step 1: Load CSV data and adjust column names
-file_path = '/content/PredictionRetention - Sheet11.csv'  # Replace with your actual file path
+# Replace with your actual file path
+file_path = '/content/PredictionRetention - Sheet11.csv'
 
 # Read CSV with header=0 to automatically use the first row as column names
 df = pd.read_csv(file_path, header=0)
@@ -28,6 +39,8 @@ df['Time'] = pd.to_datetime(df['Time'], errors='coerce')
 df = df.dropna(subset=['Time'])
 
 # Step 3: Calculate features
+
+
 def calculate_features(df):
     # Extract hour for peak activity
     df['hour'] = df['Time'].dt.hour
@@ -35,18 +48,25 @@ def calculate_features(df):
     # Aggregate features by UserName
     user_features = df.groupby('UserName').agg(
         D0_total_time=('GameExited', 'sum'),  # Total time spent on D0
-        D0_num_games=('game_name', 'nunique'),  # Number of unique games played on D0
+        # Number of unique games played on D0
+        D0_num_games=('game_name', 'nunique'),
         D0_num_sessions=('Time', 'count'),  # Number of distinct sessions on D0
-        D0_num_genres=('Genre', 'nunique'),  # Number of unique genres played on D0
-        D0_most_played_genre=('Genre', lambda x: x.mode()[0] if not x.mode().empty else None),  # Most played genre on D0
-        D0_most_played_game=('game_name', lambda x: x.mode()[0] if not x.mode().empty else None),  # Most played game on D0
+        # Number of unique genres played on D0
+        D0_num_genres=('Genre', 'nunique'),
+        D0_most_played_genre=('Genre', lambda x: x.mode()[
+                              0] if not x.mode().empty else None),  # Most played genre on D0
+        D0_most_played_game=('game_name', lambda x: x.mode()[
+                             0] if not x.mode().empty else None),  # Most played game on D0
         D0_first_activity_hour=('hour', 'min'),  # First activity hour on D0
         D0_last_activity_hour=('hour', 'max'),  # Last activity hour on D0
-        D0_avg_session_duration=('GameExited', 'mean'),  # Average session duration on D0
-        D0_peak_activity_hour=('hour', lambda x: x.value_counts().idxmax() if not x.value_counts().empty else None)  # Peak activity hour on D0
+        # Average session duration on D0
+        D0_avg_session_duration=('GameExited', 'mean'),
+        D0_peak_activity_hour=('hour', lambda x: x.value_counts().idxmax(
+        ) if not x.value_counts().empty else None)  # Peak activity hour on D0
     ).reset_index()
 
     return user_features
+
 
 # Calculate features
 user_features = calculate_features(df)
@@ -54,20 +74,18 @@ user_features = calculate_features(df)
 # Save the features to a CSV file
 user_features.to_csv('user_features.csv', index=False)
 
-import pandas as pd
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, accuracy_score
-from sklearn.preprocessing import LabelEncoder
 
 # Load dataset
-file_path = '/content/PredictionRetention - Dataset2 (4).csv'  # Replace with your actual file path
+# Replace with your actual file path
+file_path = '/content/PredictionRetention - Dataset2 (4).csv'
 data = pd.read_csv(file_path)
 
 # Encode categorical features
 label_encoder = LabelEncoder()
-data['D0_most_played_genre'] = label_encoder.fit_transform(data['D0_most_played_genre'])
-data['D0_most_played_game'] = label_encoder.fit_transform(data['D0_most_played_game'])
+data['D0_most_played_genre'] = label_encoder.fit_transform(
+    data['D0_most_played_genre'])
+data['D0_most_played_game'] = label_encoder.fit_transform(
+    data['D0_most_played_game'])
 
 # Define input features and output labels
 features = ['D0_total_time', 'D0_num_games', 'D0_num_sessions', 'D0_num_genres', 'D0_most_played_genre',
@@ -79,16 +97,18 @@ y_d3 = data['D3']
 y_d6 = data['D6']
 
 # Split data into training and testing sets
-X_train_d1, X_test_d1, y_train_d1, y_test_d1 = train_test_split(X, y_d1, test_size=0.2, random_state=42)
-X_train_d2, X_test_d2, y_train_d2, y_test_d2 = train_test_split(X, y_d2, test_size=0.2, random_state=42)
-X_train_d3, X_test_d3, y_train_d3, y_test_d3 = train_test_split(X, y_d3, test_size=0.2, random_state=42)
-X_train_d6, X_test_d6, y_train_d6, y_test_d6 = train_test_split(X, y_d6, test_size=0.2, random_state=42)
+X_train_d1, X_test_d1, y_train_d1, y_test_d1 = train_test_split(
+    X, y_d1, test_size=0.2, random_state=42)
+X_train_d2, X_test_d2, y_train_d2, y_test_d2 = train_test_split(
+    X, y_d2, test_size=0.2, random_state=42)
+X_train_d3, X_test_d3, y_train_d3, y_test_d3 = train_test_split(
+    X, y_d3, test_size=0.2, random_state=42)
+X_train_d6, X_test_d6, y_train_d6, y_test_d6 = train_test_split(
+    X, y_d6, test_size=0.2, random_state=42)
 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import classification_report, accuracy_score
 
 # Train and evaluate Random Forest models
+
 def train_and_evaluate_random_forest(X_train, X_test, y_train, y_test, day):
     model = RandomForestClassifier(random_state=42)
     model.fit(X_train, y_train)
@@ -98,12 +118,19 @@ def train_and_evaluate_random_forest(X_train, X_test, y_train, y_test, day):
     print("Accuracy:", accuracy_score(y_test, y_pred))
     return model, model.feature_importances_
 
-rf_model_d1, rf_importances_d1 = train_and_evaluate_random_forest(X_train_d1, X_test_d1, y_train_d1, y_test_d1, 1)
-rf_model_d2, rf_importances_d2 = train_and_evaluate_random_forest(X_train_d2, X_test_d2, y_train_d2, y_test_d2, 2)
-rf_model_d3, rf_importances_d3 = train_and_evaluate_random_forest(X_train_d3, X_test_d3, y_train_d3, y_test_d3, 3)
-rf_model_d6, rf_importances_d6 = train_and_evaluate_random_forest(X_train_d6, X_test_d6, y_train_d6, y_test_d6, 6)
+
+rf_model_d1, rf_importances_d1 = train_and_evaluate_random_forest(
+    X_train_d1, X_test_d1, y_train_d1, y_test_d1, 1)
+rf_model_d2, rf_importances_d2 = train_and_evaluate_random_forest(
+    X_train_d2, X_test_d2, y_train_d2, y_test_d2, 2)
+rf_model_d3, rf_importances_d3 = train_and_evaluate_random_forest(
+    X_train_d3, X_test_d3, y_train_d3, y_test_d3, 3)
+rf_model_d6, rf_importances_d6 = train_and_evaluate_random_forest(
+    X_train_d6, X_test_d6, y_train_d6, y_test_d6, 6)
 
 # Train and evaluate Gradient Boosting models
+
+
 def train_and_evaluate_gradient_boosting(X_train, X_test, y_train, y_test, day):
     model = GradientBoostingClassifier(random_state=42)
     model.fit(X_train, y_train)
@@ -113,10 +140,15 @@ def train_and_evaluate_gradient_boosting(X_train, X_test, y_train, y_test, day):
     # print("Accuracy:", accuracy_score(y_test, y_pred))
     return model, model.feature_importances_
 
-gb_model_d1, gb_importances_d1 = train_and_evaluate_gradient_boosting(X_train_d1, X_test_d1, y_train_d1, y_test_d1, 1)
-gb_model_d2, gb_importances_d2 = train_and_evaluate_gradient_boosting(X_train_d2, X_test_d2, y_train_d2, y_test_d2, 2)
-gb_model_d3, gb_importances_d3 = train_and_evaluate_gradient_boosting(X_train_d3, X_test_d3, y_train_d3, y_test_d3, 3)
-gb_model_d6, gb_importances_d6 = train_and_evaluate_gradient_boosting(X_train_d6, X_test_d6, y_train_d6, y_test_d6, 6)
+
+gb_model_d1, gb_importances_d1 = train_and_evaluate_gradient_boosting(
+    X_train_d1, X_test_d1, y_train_d1, y_test_d1, 1)
+gb_model_d2, gb_importances_d2 = train_and_evaluate_gradient_boosting(
+    X_train_d2, X_test_d2, y_train_d2, y_test_d2, 2)
+gb_model_d3, gb_importances_d3 = train_and_evaluate_gradient_boosting(
+    X_train_d3, X_test_d3, y_train_d3, y_test_d3, 3)
+gb_model_d6, gb_importances_d6 = train_and_evaluate_gradient_boosting(
+    X_train_d6, X_test_d6, y_train_d6, y_test_d6, 6)
 
 # Combine feature importances into a DataFrame
 importances_df = pd.DataFrame({
@@ -133,18 +165,18 @@ importances_df = pd.DataFrame({
 
 print(importances_df)
 
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # Load dataset
-file_path = '/content/PredictionRetention - Dataset2 (4).csv'  # Replace with your actual file path
+# Replace with your actual file path
+file_path = '/content/PredictionRetention - Dataset2 (4).csv'
 data = pd.read_csv(file_path)
 
 # Encode categorical features
 label_encoder = LabelEncoder()
-data['D0_most_played_genre'] = label_encoder.fit_transform(data['D0_most_played_genre'])
-data['D0_most_played_game'] = label_encoder.fit_transform(data['D0_most_played_game'])
+data['D0_most_played_genre'] = label_encoder.fit_transform(
+    data['D0_most_played_genre'])
+data['D0_most_played_game'] = label_encoder.fit_transform(
+    data['D0_most_played_game'])
 
 
 # Define input features and output labels
@@ -162,7 +194,8 @@ corr_matrix = correlation_data.corr()
 
 # Plot heatmap
 plt.figure(figsize=(12, 8))
-sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f", annot_kws={"size": 10})
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm',
+            fmt=".2f", annot_kws={"size": 10})
 plt.title('Correlation Heatmap between Features and Output Labels')
 plt.xticks(rotation=45)
 plt.yticks(rotation=0)
@@ -191,7 +224,8 @@ print("Random Forest Predictions for new data (D2):", predictions_rf_D2)
 print("Random Forest Predictions for new data (D3):", predictions_rf_D3)
 print("Random Forest Predictions for new data (D6):", predictions_rf_D6)
 
-new_data_file_path = '/content/testing.csv'  # Replace with the path to your new data CSV file
+# Replace with the path to your new data CSV file
+new_data_file_path = '/content/testing.csv'
 new_data = pd.read_csv(new_data_file_path)
 
 # Ensure the new data has the same feature columns as the training data
@@ -209,18 +243,16 @@ new_data.to_csv(output_file_path, index=False)
 
 # print(f"Predictions saved to {output_file_path}")
 
-import pickle
-pickle.dump(rf_model_d1,open('rf_model_d1.pkl','wb'))
-pickle.dump(rf_model_d2,open('rf_model_d2.pkl','wb'))
-pickle.dump(rf_model_d3,open('rf_model_d3.pkl','wb'))
-pickle.dump(rf_model_d6,open('rf_model_d6.pkl','wb'))
+pickle.dump(rf_model_d1, open('rf_model_d1.pkl', 'wb'))
+pickle.dump(rf_model_d2, open('rf_model_d2.pkl', 'wb'))
+pickle.dump(rf_model_d3, open('rf_model_d3.pkl', 'wb'))
+pickle.dump(rf_model_d6, open('rf_model_d6.pkl', 'wb'))
 
-rf_model_d1 = pickle.load(open('rf_model_d1.pkl','rb'))
-print(rf_model_d1.predict([[8,4,0,3,4,2,11,11]]))
-rf_model_d2 = pickle.load(open('rf_model_d2.pkl','rb'))
-print(rf_model_d2.predict([[8,4,0,3,4,2,11,11]]))
+rf_model_d1 = pickle.load(open('rf_model_d1.pkl', 'rb'))
+print(rf_model_d1.predict([[8, 4, 0, 3, 4, 2, 11, 11]]))
+rf_model_d2 = pickle.load(open('rf_model_d2.pkl', 'rb'))
+print(rf_model_d2.predict([[8, 4, 0, 3, 4, 2, 11, 11]]))
 
-from google.colab import files
 
 # For a scikit-learn model
 files.download('rf_model_d1.pkl')
@@ -228,4 +260,3 @@ files.download('rf_model_d2.pkl')
 files.download('rf_model_d3.pkl')
 
 files.download('rf_model_d6.pkl')
-

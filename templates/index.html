@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retention Prediction</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Enter the 8 features for prediction</h1>
+    <form action="/predict" method="POST">
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>D0_total_time (minutes):</td>
+                <td><input type="text" name="feature1"></td>
+            </tr>
+            <tr>
+                <td>D0_#distinct_games:</td>
+                <td><input type="text" name="feature2"></td>
+            </tr>
+            <tr>
+                <td>D0_num_sessions:</td>
+                <td><input type="text" name="feature3"></td>
+            </tr>
+            <tr>
+                <td>D0_#distinct_genres:</td>
+                <td><input type="text" name="feature4"></td>
+            </tr>
+            <tr>
+                <td>D0_fre_genre_played:</td>
+                <td><input type="text" name="feature5"></td>
+            </tr>
+            <tr>
+                <td>D0_fre_game_played:</td>
+                <td><input type="text" name="feature6"></td>
+            </tr>
+            <tr>
+                <td>D0_first_activity_hour:</td>
+                <td><input type="text" name="feature7"></td>
+            </tr>
+            <tr>
+                <td>D0_last_activity_hour:</td>
+                <td><input type="text" name="feature8"></td>
+            </tr>
+        </table>
+        <input type="submit" value="Predict">
+    </form>
+    <h3>{{ prediction_text }}</h3>
+</body>
+</html>
